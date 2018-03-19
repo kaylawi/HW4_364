@@ -56,10 +56,11 @@ login_manager.init_app(app) # set up login manager
 
 # TODO 364: Set up association Table between search terms and GIFs (you can call it anything you want, we suggest 'tags' or 'search_gifs').
 
-
+# search_gifs = db.Table('search_gifs', db.Column( ))
 
 # TODO 364: Set up association Table between GIFs and collections prepared by user (you can call it anything you want. We suggest: user_collection)
 
+# user_collection = db.Table('user_collection' , db.Column())
 
 ## User-related Models
 
@@ -104,13 +105,12 @@ class Gif(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(128))
     embedURL = db.Column(db.String(256))
-    gif = db.relationship('PersonalGifCollection','SearchTerm' , backref = 'Gif')
-
+ 
     # TODO 364: Define a __repr__ method for the Gif model that shows the title and the URL of the gif
 
     def __repr__(self):
 
-        return "{0} (ID: {1})".format( self.id, self.title, self.embedURL, self.gif)
+        return "{0} (ID: {1})".format(self.title, self.embedURL)
 
 # Model to store a personal gif collection
 class PersonalGifCollection(db.Model):
@@ -118,11 +118,11 @@ class PersonalGifCollection(db.Model):
     # TODO 364: Add code for the PersonalGifCollection model such that it has the following fields:
     # id (Integer, primary key)
     # name (String, up to 255 characters)
-
+ 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(255))
 
-    personalgifcollection = db.relationship('Gif', 'SearchTerm' , backref = 'PersonalGifCollection')
+    personalgifcollection = db.relationship('User', backref = 'PersonalGifCollection')
 
     # This model should have a one-to-many relationship with the User model (one user, many personal collections of gifs with different names -- say, "Happy Gif Collection" or "Sad Gif Collection")
 
@@ -134,15 +134,14 @@ class SearchTerm(db.Model):
     # id (Integer, primary key)
     # term (String, up to 32 characters, unique) -- You want to ensure the database cannot save non-unique search terms
 
-
     # This model should have a many to many relationship with gifs (a search will generate many gifs to save, and one gif could potentially appear in many searches)
 
-    id = db.Column(db.Integer, primary_key = True)
-    term = db.Column(db.String(32))
+     id = db.Column(db.Integer, primary_key = True)
+     term = db.Column(db.String(32),UNIQUE = True)
 
-    # TODO 364: Define a __repr__ method for this model class that returns the term string
+    # # TODO 364: Define a __repr__ method for this model class that returns the term string
 
-    def __repr__ (self):
+     def __repr__ (self):
 
         return " {0} (ID:{1})".format(self.id, self.term) 
 
@@ -189,10 +188,13 @@ class CollectionCreateForm(FlaskForm):
 ########################
 
 def get_gifs_from_giphy(search_string):
+
+    pass 
     """ Returns data from Giphy API with up to 5 gifs corresponding to the search input"""
-    a = db.session.query(Giphy).filter_by(giphy = giphy).first()
-    baseurl = "https://api.giphy.com/v1/gifs/search/?  -- api key --   ={}".formati(giphy)
-    req = requests.get(url).json()['Title']
+   
+    # a = db.session.query(Giphy).filter_by(giphy = giphy).first()
+    # baseurl = "https://api.giphy.com/v1/gifs/search/?  -- api key --   ={}".formati(giphy)
+    # req = requests.get(url).json()['Title']
 
   
     # TODO 364: This function should make a request to the Giphy API using the input search_string, and your api_key (imported at the top of this file)
@@ -203,27 +205,34 @@ def get_gifs_from_giphy(search_string):
 
 
 # Provided
+
 def get_gif_by_id(id):
+
     """Should return gif object or None"""
-    g = Gif.query.filter_by(id=id).first()
-    return g
+
+    pass 
+
+    # g = Gif.query.filter_by(id=id).first()
+    # return g
 
 def get_or_create_gif(title, url):
+
+    pass
     """Always returns a Gif instance"""
     # TODO 364: This function should get or create a Gif instance. Determining whether the gif already exists in the database should be based on the gif's title.
 
-    d = db.session.query(Gif).filter_by(gif = gif).first()
+    # d = db.session.query(Gif).filter_by(gif = gif).first()
 
-    if d:
+    # if d:
 
-        flash("Gif Already Exists")
+    #     flash("Gif Already Exists")
 
-    else:
-        gif = Gif(giphy = giphy)
-        db_session.add(gif)
-        db.session.commit()
-        flash("Gif added successfully")
-        
+    # else:
+    #     gif = Gif(giphy = giphy)
+    #     db_session.add(gif)
+    #     db.session.commit()
+    #     flash("Gif added successfully")
+
 def get_or_create_search_term(term):
     """Always returns a SearchTerm instance"""
     # TODO 364: This function should return the search term instance if it already exists.
