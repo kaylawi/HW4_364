@@ -2,6 +2,8 @@
 # An application in Flask where you can log in and create user accounts to save Gif collections
 # SI 364 - W18 - HW4
 
+# Worked with Amanda Gomez and Chalse Okorom 
+
 # TODO 364: Check out the included file giphy_api_key.py and follow the instructions in TODOs there before proceeding to view functions.
 
 # TODO 364: All templates you need are provided and should not be edited. However, you will need to inspect the templates that exist in order to make sure you send them the right data!
@@ -270,14 +272,14 @@ def get_or_create_search_term(term):
 
 def get_or_create_collection(name, current_user, gif_list=[]):
     """Always returns a PersonalGifCollection instance"""
-    a = PersonalGifCollection.query.filter_by(name=term, user_id=current_user).first()
+    a = PersonalGifCollection.query.filter_by(name=name, users_id=current_user.id).first()
 
     if a:
         flash (" Term already exists")
         return a
 
     else:
-         a = PersonalGifCollection(name=name, user_id=current_user, gifs=[])
+         a = PersonalGifCollection(name=name, users_id=current_user.id, gifs=[])
          for g in gif_list:
             a.gifs.append(g)
 
@@ -378,9 +380,8 @@ def search_terms():
     # That template should show a list of all the search terms that have been searched so far. Each one should link to the gifs that resulted from that search.
     # HINT: All you have to do is make the right query in this view function and send the right data to the template! You can complete this in two lines. Check out the template for more hints!
     
-    all_terms = SearchTerm.query.filter_by()(all_terms = search).first()
-    search = db.session.query(SearchTerm)
-    return render_template('search_terms.html',search=search.all())
+    all_terms = SearchTerm.query.all()
+    return render_template('search_terms.html', all_terms=all_terms)
 
 # Provided
 @app.route('/all_gifs')
@@ -392,23 +393,35 @@ def all_gifs():
 @login_required
 def create_collection():
     form = CollectionCreateForm()
-    if form.validate_on_submit():
-     gifs = Gif.query.all()
-    choices = [(g.id, g.title) for g in gifs]
+    gifs = Gif.query.all()
+    choices = [(str(g.id), g.title) for g in gifs]
     form.gif_picks.choices = choices
     # TODO 364: If the form validates on submit, get the list of the gif ids that were selected from the form. Use the get_gif_by_id function to create a list of Gif objects.  Then, use the information available to you at this point in the function (e.g. the list of gif objects, the current_user) to invoke the get_or_create_collection function, and redirect to the page that shows a list of all your collections.
     # If the form is not validated, this view function should simply render the create_collection.html template and send the form to the template.
+
+    if form.validate_on_submit():
+        print('Submitted')
+        name=form.name.data
+        gif_picks= form.gif_picks.data
+        lis=[]
+        for i in lis:
+            index= choices[int(i)-1][0]
+            lis.append(get_gif_by_id(index))
+        get_or_create_collection(name, current_user,lis)
+        return redirect(url_for('collections'))
+    print('Failed')
+    return render_template('create_collection.html', form=form)
 
 
 @app.route('/collections',methods=["GET","POST"])
 @login_required
 def collections():
 
-    collections = PersonalGifCollection.query.filter_by().first()
+    collections = PersonalGifCollection.query.filter_by(users_id=current_user.id)
    
     # TODO 364: This view function should render the collections.html template so that only the current user's personal gif collection links will render in that template. Make sure to examine the template so that you send it the correct data!
 
-    return render_template('collections.html',user_id = current_user)
+    return render_template('collections.html',collections=collections)
 # Provided
 @app.route('/collection/<id_num>')
 def single_collection(id_num):
